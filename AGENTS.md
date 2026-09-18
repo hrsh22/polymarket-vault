@@ -32,6 +32,7 @@ For all vault-related work, read `VAULT_KNOWLEDGE.md` first.
 
 Vault-specific rules that are easy to get wrong:
 
+- Discover currently renders a static empty state while the backend is intentionally offline. Do not mount discovery queries or wallet authentication on `/discover` until live vaults are re-enabled.
 - The active custom vault flow uses `FlatBookVaultV2` semantics, not `ClosedBookBatchVault` and not `EpochTrancheVault`.
 - In the active `FlatBookVaultV2` contract version, processed queued deposits auto-mint ERC20 shares during `processDeposits()`; do not show a manual processed-deposit claim step for new deposits.
 - Custom-vault NAV/share pricing must exclude queued deposits and redemption liabilities. Never price custom vaults from raw `totalAssets / totalSupply` when a liability-adjusted source exists.

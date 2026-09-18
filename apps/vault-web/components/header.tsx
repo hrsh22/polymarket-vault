@@ -57,7 +57,8 @@ export function Header({ className }: HeaderProps) {
           </nav>
         </div>
 
-        <HeaderAuth />
+        {/* The paused Discover page must not check backend wallet sessions. */}
+        {pathname !== "/discover" && <HeaderAuth />}
 
         <nav className="col-span-2 flex w-full md:hidden">
           <Link

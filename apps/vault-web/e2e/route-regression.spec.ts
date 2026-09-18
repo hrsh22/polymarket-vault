@@ -17,19 +17,26 @@ test.describe("App-local route regression coverage", () => {
     });
   });
 
-  test("discover page shows loading and a stable vault card", async ({ page }) => {
-    await page.goto("/discover", { waitUntil: "domcontentloaded" });
+  test("discover shows a static empty state without backend requests", async ({ page }) => {
+    const backendRequests: string[] = [];
+    await page.route(/\/(?:vault|api\/vaults|auth)\//, (route) => {
+      backendRequests.push(route.request().url());
+      return route.abort();
+    });
 
-    if (
-      await page
-        .getByTestId("discover-vaults-loading")
-        .isVisible()
-        .catch(() => false)
-    ) {
-      await expect(page.getByTestId("discover-vaults-loading")).toBeVisible();
-    }
+    const response = await page.goto("/discover", { waitUntil: "networkidle" });
+    expect(await response?.text()).toContain("No vaults are available right now.");
+    await expect(page.getByTestId("discover-vaults-empty")).toHaveText(
+      "No vaults are available right now.",
+    );
+    await expect(page.getByTestId("discover-vaults-loading")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Try again" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "About this experiment" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Connect Wallet" })).toHaveCount(0);
 
-    await expect(page.getByText(/0 vaults available|Alpha Vault|Sisyphus/i)).toBeVisible();
+    await page.clock.install();
+    await page.clock.fastForward(65_000);
+    expect(backendRequests).toEqual([]);
   });
 
   test("vault detail shows disconnected deposit and auth-gated withdraw states", async ({
